@@ -16,7 +16,7 @@ module MetasploitModule
       'Name'          => 'Linux Meterpreter',
       'Description'   => 'Inject the mettle server payload (staged)',
       'Author'        => [
-        'Adam Cammack <adam_cammack[at]rapid7.com'
+        'Adam Cammack <adam_cammack[at]rapid7.com>'
       ],
       'Platform'      => 'linux',
       'Arch'          => ARCH_ARMLE,
