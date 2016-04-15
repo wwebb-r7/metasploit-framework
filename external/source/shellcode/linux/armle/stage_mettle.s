@@ -31,12 +31,12 @@ _start:
   @ The final stack must be aligned, so we align and then make room backwards
   @ by _adding_ to sp.
   and sp, #-16      @ Align
-  add sp, #256 + 4  @ Add room for initial stack and prog name
+  add sp, #36 + 4   @ Add room for initial stack and prog name
   mov r4, #109      @  "m" (0,0,0,109)
   push {r4}         @ On the stack
   mov r4,#2         @ ARGC
-  mov r5,sp         @ ARGV[0]
-  mov r6,r12        @ socket fd
+  mov r5,sp         @ ARGV[0] char *prog_name
+  mov r6,r12        @ ARGV[1] int socket fd
   mov r7,#0         @ (NULL)
   mov r8,#0         @ (NULL) (Ending ENV)
   mov r9,#7         @ AT_BASE

