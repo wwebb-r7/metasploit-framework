@@ -84,7 +84,7 @@ module MetasploitModule
   end
 
   def generate_meterpreter
-    MetasploitPayloads.read('meterpreter', 'mettle-armle.bin')
+    MetasploitPayloads::Mettle.read('arm-linux-musleabihf', 'mettle.bin')
   end
 
   def generate_config(opts={})

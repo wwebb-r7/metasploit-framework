@@ -71,6 +71,8 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency 'metasploit-model', '1.1.0'
   # Needed for Meterpreter
   spec.add_runtime_dependency 'metasploit-payloads', '1.1.6'
+  # TODO: lock this version better
+  spec.add_runtime_dependency 'metasploit-payloads-mettle', '>= 0.0.2'
   # Needed by msfgui and other rpc components
   spec.add_runtime_dependency 'msgpack'
   # get list of network interfaces, like eth* from OS.
