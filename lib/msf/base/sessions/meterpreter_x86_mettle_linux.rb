@@ -11,6 +11,12 @@ module Sessions
 #
 ###
 class Meterpreter_x86_Mettle_Linux < Msf::Sessions::Meterpreter
+  def supports_ssl?
+    false
+  end
+  def supports_zlib?
+    false
+  end
   def initialize(rstream, opts={})
     super
     self.platform      = 'x86/linux'

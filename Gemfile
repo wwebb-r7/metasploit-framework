@@ -43,4 +43,6 @@ group :test do
   gem 'shoulda-matchers'
   # Manipulate Time.now in specs
   gem 'timecop'
+  # Mettle
+  gem 'metasploit-payloads-mettle'
 end
