@@ -214,6 +214,14 @@ class UI < Rex::Post::UI
   end
 
   #
+  # Start the keyboard sniffer with program attribution
+  #
+  def keyscan_start_v
+    request  = Packet.create_request('stdapi_ui_start_keyscan_winspy')
+    response = client.send_request(request)
+    return true
+  end
+  #
   # Stop the keyboard sniffer
   #
   def keyscan_stop
