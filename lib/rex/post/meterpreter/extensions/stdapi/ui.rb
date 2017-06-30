@@ -182,13 +182,60 @@ class UI < Rex::Post::UI
       screenshot_dll += f.read( f.stat.size )
     end
 
-    request.add_tlv( TLV_TYPE_DESKTOP_SCREENSHOT_PE32DLL_BUFFER, screenshot_dll, false, true )
-    request.add_tlv( TLV_TYPE_DESKTOP_SCREENSHOT_PE32DLL_LENGTH, screenshot_dll.length )
+    request.add_tlv( TLV_TYPE_DESKTOP_DXSCREENSHOT_PE32DLL_BUFFER, screenshot_dll, false, true )
+    request.add_tlv( TLV_TYPE_DESKTOP_DXSCREENSHOT_PE32DLL_LENGTH, screenshot_dll.length )
 
     # send the request and return the jpeg image if successfull.
     response = client.send_request( request )
     if( response.result == 0 )
       return response.get_tlv_value( TLV_TYPE_DESKTOP_SCREENSHOT )
+    end
+
+    return nil
+  end
+
+  #
+  # Grab a screenshot of the desktop using DirectX
+  # only doing x86 atm
+  #
+  def dxscreenshot( quality=50 )
+    request = Packet.create_request( 'stdapi_ui_desktop_dxscreenshot' )
+    request.add_tlv( TLV_TYPE_DESKTOP_SCREENSHOT_QUALITY, quality )
+
+    # include the x64 screenshot dll if the host OS is x64
+    if( client.sys.config.sysinfo['Architecture'] =~ /^\S*x64\S*/ )
+      screenshot_path = MetasploitPayloads.meterpreter_path('dxscreenshot','dll')
+      if screenshot_path.nil?
+        raise RuntimeError, "dxscreenshot.dll not found", caller
+      end
+
+      screenshot_dll  = ''
+      ::File.open( screenshot_path, 'rb' ) do |f|
+        screenshot_dll += f.read( f.stat.size )
+      end
+
+      request.add_tlv( TLV_TYPE_DESKTOP_DXSCREENSHOT_PE64DLL_BUFFER, screenshot_dll, false, true )
+      request.add_tlv( TLV_TYPE_DESKTOP_DXSCREENSHOT_PE64DLL_LENGTH, screenshot_dll.length )
+    end
+
+    # but always include the x86 screenshot dll as we can use it for wow64 processes if we are on x64
+    screenshot_path = MetasploitPayloads.meterpreter_path('dxscreenshot','.dll')
+    if screenshot_path.nil?
+      raise RuntimeError, "dxscreenshot.dll not found", caller
+    end
+
+    screenshot_dll  = ''
+    ::File.open( screenshot_path, 'rb' ) do |f|
+      screenshot_dll += f.read( f.stat.size )
+    end
+
+    request.add_tlv( TLV_TYPE_DESKTOP_DXSCREENSHOT_PE32DLL_BUFFER, screenshot_dll, false, true )
+    request.add_tlv( TLV_TYPE_DESKTOP_DXSCREENSHOT_PE32DLL_LENGTH, screenshot_dll.length )
+
+    # send the request and return the jpeg image if successfull.
+    response = client.send_request( request )
+    if( response.result == 0 )
+      return response.get_tlv_value( TLV_TYPE_DESKTOP_DXSCREENSHOT )
     end
 
     return nil

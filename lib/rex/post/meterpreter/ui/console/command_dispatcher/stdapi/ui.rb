@@ -29,6 +29,7 @@ class Console::CommandDispatcher::Stdapi::Ui
       "keyscan_start" => "Start capturing keystrokes",
       "keyscan_stop"  => "Stop capturing keystrokes",
       "screenshot"    => "Grab a screenshot of the interactive desktop",
+      "dxscreenshot"  => "Grab a screenshot of the desktop using DirectX",
       "setdesktop"    => "Change the meterpreters current desktop",
       "uictl"         => "Control some of the user interface components"
       #  not working yet
@@ -43,6 +44,7 @@ class Console::CommandDispatcher::Stdapi::Ui
       "keyscan_start" => [ "stdapi_ui_start_keyscan" ],
       "keyscan_stop"  => [ "stdapi_ui_stop_keyscan" ],
       "screenshot"    => [ "stdapi_ui_desktop_screenshot" ],
+      "dxscreenshot"  => [ "stdapi_ui_desktop_dxscreenshot" ],
       "setdesktop"    => [ "stdapi_ui_desktop_set" ],
       "uictl"         => [
         "stdapi_ui_enable_mouse",
@@ -151,6 +153,33 @@ class Console::CommandDispatcher::Stdapi::Ui
     }
 
     data = client.ui.screenshot( quality )
+
+    if( data )
+      ::File.open( path, 'wb' ) do |fd|
+        fd.write( data )
+      end
+
+      path = ::File.expand_path( path )
+
+      print_line( "Screenshot saved to: #{path}" )
+
+      Rex::Compat.open_file( path ) if view
+    end
+
+    return true
+  end
+
+  #
+  # Grab a screenshot of the current desktop using DirectX and WIC
+  # (much faster if supported)
+  #
+  def cmd_dxscreenshot( *args )
+    path    = Rex::Text.rand_text_alpha(8) + ".jpeg"
+    quality = 50
+    view    = false
+
+    # quality is unreferenced
+    data = client.ui.dxscreenshot( quality )
 
     if( data )
       ::File.open( path, 'wb' ) do |fd|
