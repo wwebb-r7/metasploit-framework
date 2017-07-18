@@ -30,28 +30,25 @@ class Drivertools < Extension
       ])
   end
 
-  def drivertools_send_vuln()
-    request = Packet.create_request('drivertools_send_vuln')
-    response = client.send_request(request)
 
-    return true
-  end
 
-  def drivertools_set_vuln_loc(rsecs)
-    request = Packet.create_request('drivertools_set_vuln_loc')
-    request.add_tlv(TLV_TYPE_DEV_RECTIME, rsecs)
-    response = client.send_request(request)
-
-    return true
-  end
-
-    def drivertools_do_work()
+  def drivertools_do_work()
     request = Packet.create_request('drivertools_do_work')
     response = client.send_request(request)
-    if !(response.result == 0)
-      puts "[+] Test!"
-    end
     return true
+  end
+
+  def drivertools_tdl_do_nothing()
+    request = Packet.create_request('drivertools_tdl_do_nothing')
+    response = client.send_request(request)
+
+    # data = Array.new
+
+    # (response.get_tlv_values(TLV_TYPE_TDL_PCLIENT)).each do |x|
+    #   data << x
+    # end
+
+    return response
   end
 
   # def drivertools_image_get_dev_screen

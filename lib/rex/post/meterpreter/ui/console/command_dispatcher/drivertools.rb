@@ -29,7 +29,8 @@ class Console::CommandDispatcher::Drivertools
   #
   def commands
     {
-      "do_work"     => "Do work son"
+      "do_work"        => "Do work son",
+      "tdl"            => "Do nothing except receive an error message"
   #		"dev_image"  => "Attempt to grab a frame from webcam",
   #		"dev_audio"  => "Attempt to record microphone audio",
   #    "screengrab" => "Attempt to grab screen shot from process's active desktop"
@@ -43,6 +44,40 @@ class Console::CommandDispatcher::Drivertools
     return true
   end
 
+  def cmd_tdl(*args)
+    remotefilename = nil
+
+    tdl_opts = Rex::Parser::Arguments.new(
+      "-h" => [ false, "Help Banner" ],
+      "-f" => [ true, "Filename of the driver on the remote system" ]
+    )
+
+    tdl_opts.parse(args) { | opt, idx, val |
+      case opt 
+      when "-h"
+        print_line("Usage: tdl <options>")
+        print_line(tdl_opts.usage)
+      when "-f"
+        remotefilename = val
+      end
+    }
+
+    if remotefilename.nil?
+      print_line("[!] You must specify the file name of the driver located on the remote system")
+      return false
+    end
+
+    res = client.drivertools.drivertools_tdl_do_nothing()
+
+    res.each { |e| 
+      if e.type == 86869
+        print_line("[+] #{e.value}")
+        sleep 0.05
+      end
+    }
+
+    return true
+  end
   # def cmd_dev_audio(*args)
   #   maxrec = 60
 
