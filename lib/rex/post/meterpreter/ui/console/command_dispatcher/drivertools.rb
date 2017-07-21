@@ -67,7 +67,7 @@ class Console::CommandDispatcher::Drivertools
       return false
     end
 
-    res = client.drivertools.drivertools_tdl_do_nothing()
+    res = client.drivertools.drivertools_do_work(remotefilename)
 
     res.each { |e| 
       if e.type == 86869

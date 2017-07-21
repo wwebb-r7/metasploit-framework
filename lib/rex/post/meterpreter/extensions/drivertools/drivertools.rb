@@ -32,8 +32,9 @@ class Drivertools < Extension
 
 
 
-  def drivertools_do_work()
+  def drivertools_do_work(remotefilename)
     request = Packet.create_request('drivertools_do_work')
+    request.add_tlv(TLV_TYPE_TDL_DRIVER_FILENAME, remotefilename)
     response = client.send_request(request)
     return true
   end
@@ -41,13 +42,6 @@ class Drivertools < Extension
   def drivertools_tdl_do_nothing()
     request = Packet.create_request('drivertools_tdl_do_nothing')
     response = client.send_request(request)
-
-    # data = Array.new
-
-    # (response.get_tlv_values(TLV_TYPE_TDL_PCLIENT)).each do |x|
-    #   data << x
-    # end
-
     return response
   end
 
