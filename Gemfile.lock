@@ -20,6 +20,7 @@ PATH
       metasploit-payloads (= 1.3.1)
       metasploit_data_models
       metasploit_payloads-mettle (= 0.2.2)
+      mkfifo
       msgpack
       nessus_rest
       net-ssh
@@ -165,10 +166,11 @@ GEM
     method_source (0.8.2)
     mini_portile2 (2.2.0)
     minitest (5.10.3)
+    mkfifo (0.1.1)
     msgpack (1.1.0)
     multipart-post (2.0.0)
     nessus_rest (0.1.6)
-    net-ssh (4.1.0)
+    net-ssh (4.2.0)
     network_interface (0.0.2)
     nexpose (7.0.0)
     nokogiri (1.8.0)
@@ -220,7 +222,7 @@ GEM
       ffi
     rbnacl-libsodium (1.0.13)
       rbnacl (>= 3.0.1)
-    recog (2.1.13)
+    recog (2.1.15)
       nokogiri
     redcarpet (3.4.0)
     rex-arch (0.1.11)
@@ -252,7 +254,7 @@ GEM
     rex-powershell (0.1.72)
       rex-random_identifier
       rex-text
-    rex-random_identifier (0.1.3)
+    rex-random_identifier (0.1.4)
       rex-text
     rex-registry (0.1.3)
     rex-rop_builder (0.1.3)

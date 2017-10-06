@@ -73,6 +73,8 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency 'metasploit-payloads', '1.3.1'
   # Needed for the next-generation POSIX Meterpreter
   spec.add_runtime_dependency 'metasploit_payloads-mettle', '0.2.2'
+  # Needed for msfterm
+  spec.add_runtime_dependency 'mkfifo'
   # Needed by msfgui and other rpc components
   spec.add_runtime_dependency 'msgpack'
   # get list of network interfaces, like eth* from OS.

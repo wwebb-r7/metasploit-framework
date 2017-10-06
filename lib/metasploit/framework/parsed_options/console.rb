@@ -12,6 +12,7 @@ class Metasploit::Framework::ParsedOptions::Console < Metasploit::Framework::Par
         options.console.confirm_exit = false
         options.console.histfile = nil
         options.console.local_output = nil
+        options.console.muxed = false
         options.console.plugins = []
         options.console.quiet = false
         options.console.real_readline = false
@@ -46,6 +47,10 @@ class Metasploit::Framework::ParsedOptions::Console < Metasploit::Framework::Par
 
         option_parser.on('-L', '--real-readline', 'Use the system Readline library instead of RbReadline') do
           options.console.real_readline = true
+        end
+
+        option_parser.on('-m', '--multipane', 'Use multipane output scheme for terminal multiplexer') do
+          options.console.muxed = true
         end
 
         option_parser.on('-o', '--output FILE', 'Output to the specified file') do |file|

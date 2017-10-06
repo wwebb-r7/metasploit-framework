@@ -25,7 +25,10 @@ class Output < Rex::Ui::Output
   def initialize
     @config = {
       :color => :auto, # true, false, :auto
-    }
+      :piped => true,
+      :out => "/home/b/git/metasploit-framework/term/tp_status"
+    }    
+      @config[:piped] = true
     super
   end
   attr_reader :config
@@ -59,7 +62,13 @@ class Output < Rex::Ui::Output
   end
 
   def print_status(msg = '')
-    print_line("%bld%blu[*]%clr #{msg}")
+    if @config[:piped]
+      op = ::File.open(@config[:out], 'w+')
+      op.puts "[*] #{msg}"
+      op.flush
+    else
+      print_line("%bld%blu[*]%clr #{msg}")
+    end
   end
 
   def print_line(msg = '')
