@@ -13,6 +13,8 @@ class Msf::Modules::External::Shim
       capture_server(mod)
     when 'dos'
       dos(mod)
+    when 'remote_tcp'
+      remote_tcp(mod)
     else
       # TODO have a nice load error show up in the logs
       ''
@@ -62,6 +64,15 @@ class Msf::Modules::External::Shim
     meta = mod_meta_exploit(mod, meta)
     meta[:command_stager_flavor] = mod.meta['payload']['command_stager_flavor'].dump
     render_template('remote_exploit_cmd_stager.erb', meta)
+  end
+
+  def self.remote_tcp(mod)
+    meta = mod_meta_common(mod)
+    meta = mod_meta_exploit(mod, meta)
+    meta[:references] = mod.meta['references'].map do |r|
+      "[#{r['type'].upcase.dump}, #{r['ref'].dump}]"
+    end.join(",\n          ")
+    render_template('remote_tcp.erb', meta)
   end
 
   def self.capture_server(mod)
